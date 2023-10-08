@@ -24,16 +24,10 @@ __labels = [
     "BUTTOCKS_COVERED",
 ]
 
-
-def _read_image(image_path, target_size=320):
-    # From ultralytics
-    img = cv2.imread(image_path)
+def _preprocess(img, target_size=320):
     img_height, img_width = img.shape[:2]
     img = cv2.cvtColor(img, cv2.COLOR_BGR2RGB)
-
-    # Calculate the aspect ratio
     aspect = img_width / img_height
-
     if img_height > img_width:
         new_height = target_size
         new_width = int(target_size * aspect)
@@ -59,6 +53,12 @@ def _read_image(image_path, target_size=320):
     image_data = np.expand_dims(image_data, axis=0).astype(np.float32)
 
     return image_data, img_width, img_height
+    
+def _read_image(image_path):
+    # From ultralytics
+    img = cv2.imread(image_path)
+    return _preprocess(img)
+
 
 
 def _postprocess(output, img_width, img_height, input_width, input_height):
@@ -115,12 +115,21 @@ class NudeDetector:
         preprocessed_image, image_width, image_height = _read_image(
             image_path, self.input_width
         )
+        return self._internal_detect(preprocessed_image, image_width, image_height)
+    
+    def _internal_detect(self, preprocessed_image, image_width, image_height):
         outputs = self.onnx_session.run(None, {self.input_name: preprocessed_image})
         detections = _postprocess(
             outputs, image_width, image_height, self.input_width, self.input_height
         )
 
         return detections
+    
+    def detect_raw(self, raw_image):
+        preprocessed_image, image_width, image_height = _preprocess(
+            image_path, self.input_width
+        )
+        return self._internal_detect(preprocessed_image, image_width, image_height)
 
 
 if __name__ == "__main__":

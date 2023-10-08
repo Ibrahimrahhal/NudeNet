@@ -3,7 +3,7 @@
 https://nudenet.notai.tech/ in-browser demo (the detector is run client side, i.e: in your browser, images are not sent to a server)
 
 ```bash
-pip install --upgrade nudenet
+pip install -U git+https://github.com/Ibrahimrahhal/NudeNet
 ```
 
 ```python
